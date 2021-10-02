@@ -1,3 +1,6 @@
-test
-.idea
-.vscode
+test/
+.idea/
+.vscode/
+*.jpg
+*.png
+*.txt
