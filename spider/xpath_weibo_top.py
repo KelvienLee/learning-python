@@ -7,16 +7,11 @@ def response():
     Returns:
         String: 解析后的html文本数据
     """
-    # 请求Url
-    url = 'https://s.weibo.com/top/summary?Refer=top_hot&topnav=1&wvr=6'
-    # 请求头
+    url = 'https://s.weibo.com/top/summary?Refer=top_hot&topnav=1&wvr=6&sudaref=www.google.com'
     headers = {"user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.54 Safari/537.36"}
-    # 填入cookies并处理
-    cookie = "WBStorage=6ff1c79b|undefined; WBtopGlobal_register_version=2021100114; SUB=_2A25MUtwqDeRhGeNM7lYW-SfIyDyIHXVvJkrirDV8PUNbmtAKLWjDkW9NThtRLVj3kIwWCquDH-pNlGI6M4n0XYlK; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhizyG9QTc9Ef9lFEoXISFj5JpX5o275NHD95Qfeo-XS0.4She7Ws4Dqcj.i--fi-i8i-88i--fiKnfiKn4i--fi-z7iKysi--Xi-z4iKL2; ALF=1633675002; SSOLoginState=1633070203"
+    cookie = "SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhizyG9QTc9Ef9lFEoXISFj5JpX5KMhUgL.Fo-ESKBN1K.Xe052dJLoIEBLxK-LB.-LB--LxK-L1h-L1h.LxK-LBo5L12qLxKBLBo.L1-Bt; ALF=1664760047; SSOLoginState=1633224048; SCF=AjUyK3V8HfgvKMRoMwkHbh0cf3KmPNSTQovbZRY-1vCvcZHvv0zZzL-eodcMK2NRAIoFmMS9adgOkqhWG7J7XE8.; SUB=_2A25MXXUgDeRhGeNM7lYW-SfIyDyIHXVvK-HorDV8PUNbmtB-LWXlkW9NThtRLUt3Tbex-Oc1V9M-Uy9UNV_oUasE; WBStorage=6ff1c79b|undefined"
     cookies = dict(cookies_are=cookie)
-    # 发出请求
     r = requests.get(url, headers=headers, cookies=cookies)
-    # 解码二进制内容
     content = r.content.decode('utf-8','ignore')
     return etree.HTML(content)
 
