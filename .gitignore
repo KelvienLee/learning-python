@@ -4,3 +4,4 @@ test/
 *.jpg
 *.png
 *.txt
+__pycache__/

@@ -1,5 +1,18 @@
 import requests
+from datetime import datetime
 from lxml import etree
+from page_info import PageInfo
+
+start_time = datetime.now()
+
+"""
+Author: Kelvin
+Date: 2021-10-02
+
+使用xPath爬取微博热搜
+"""
+
+pg = PageInfo()
 
 
 def response():
@@ -7,10 +20,9 @@ def response():
     Returns:
         String: 解析后的html文本数据
     """
-    url = 'https://s.weibo.com/top/summary?Refer=top_hot&topnav=1&wvr=6&sudaref=www.google.com'
-    headers = {"user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.54 Safari/537.36"}
-    cookie = "SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhizyG9QTc9Ef9lFEoXISFj5JpX5KMhUgL.Fo-ESKBN1K.Xe052dJLoIEBLxK-LB.-LB--LxK-L1h-L1h.LxK-LBo5L12qLxKBLBo.L1-Bt; ALF=1664760047; SSOLoginState=1633224048; SCF=AjUyK3V8HfgvKMRoMwkHbh0cf3KmPNSTQovbZRY-1vCvcZHvv0zZzL-eodcMK2NRAIoFmMS9adgOkqhWG7J7XE8.; SUB=_2A25MXXUgDeRhGeNM7lYW-SfIyDyIHXVvK-HorDV8PUNbmtB-LWXlkW9NThtRLUt3Tbex-Oc1V9M-Uy9UNV_oUasE; WBStorage=6ff1c79b|undefined"
-    cookies = dict(cookies_are=cookie)
+    url = pg.url
+    headers = pg.headers
+    cookies = pg.cookies 
     r = requests.get(url, headers=headers, cookies=cookies)
     content = r.content.decode('utf-8','ignore')
     return etree.HTML(content)
@@ -72,11 +84,11 @@ def main():
     """主函数"""
     content = response()
 
-    info_1 = info_methods_1(content)
-    print('方法一：')
-    print('序号', '关键词', '热度')
-    for info in info_1: 
-        print(info['rank'], info['content'], info['hot'])
+    # info_1 = info_methods_1(content)
+    # print('方法一：')
+    # print('序号', '关键词', '热度')
+    # for info in info_1: 
+    #     print(info['rank'], info['content'], info['hot'])
 
     info_2 = info_methods_2(content)
     print('方法二：')
@@ -89,3 +101,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    end_time = datetime.now()
+    print(end_time - start_time)
