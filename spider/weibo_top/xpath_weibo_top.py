@@ -42,7 +42,7 @@ def info_methods_1(content):
     hots_result_1 = []
     for tr in tr_tags:
         eg = {}
-        # 使用循环写入数据，故支只取第一个结果再进行遍历
+        # 使用循环写入数据，故只取第一个结果再进行遍历
         rank = tr.xpath('.//td[position()<2]/text()')[0] 
         event = tr.xpath('.//a/text()')[0]
         hot = tr.xpath('.//span/text()')[0]
