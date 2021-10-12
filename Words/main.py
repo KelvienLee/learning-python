@@ -3,8 +3,7 @@ import re
 from lxml import etree
 
 
-# search_word = 'test'
-search_word = 'tea' 
+search_word = 'test'
 URL = f'https://cn.bing.com/dict/search?q={search_word}'
 
 
