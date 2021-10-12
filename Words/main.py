@@ -1,103 +1,117 @@
-import requests, re
+import requests, re, html
 from lxml import etree
 
 
-search_word = 'access'
+search_word = 'collocation'
+# search_word = input('查词：')
 URL = f'https://cn.bing.com/dict/search?q={search_word}'
 
 
 def get_html(url):
     response = requests.get(url)
+    response.encoding = 'utf-8'
     content = response.content.decode('utf-8')
-    html = etree.HTML(content)
-    text = response.text
-    return html, text
+    html_content = etree.HTML(content)
+    text_pro = response.text
+    text = html.unescape(text_pro)
+    return html_content, text
 
 
-if __name__ == '__main__':
-    html = get_html(URL)[0]
+def main():
+    html_content = get_html(URL)[0]
     text = get_html(URL)[1]
 
+    # str: 顶部提示，如果存在则返回提示字符串，不存在则输出空字符串
+    is_top_tip_exists = re.findall('<div class="in_tip b_fpage">(.*?)</div>', text, re.DOTALL)
+    if not is_top_tip_exists:
+        top_tip = ''
+    else: 
+        top_tip = is_top_tip_exists[0]
+    
+    # str: 单词，主键
     word = re.findall('<h1.*?<strong>(.*?)</strong>', text, re.DOTALL)[0]
-    us_soundmark = re.findall('<div class="hd_prUS b_primtxt">.*?;(.*?)</div>', text, re.DOTALL)[0]
-    uk_soundmark = re.findall('<div class="hd_pr b_primtxt">.*?;(.*?)</div>', text, re.DOTALL)[0]
-    us_sounds = re.findall('<a class="bigaud".*?(https://.*?.mp3).*?</a>', text, re.DOTALL)[0]
-    uk_sounds = re.findall('<a class="bigaud".*?(https://.*?.mp3).*?</a>', text, re.DOTALL)[1]
+
+    # str: 音标
+    us_soundmark = re.findall('<div class="hd_prUS b_primtxt">美(.*?)</div>', text, re.DOTALL)[0].strip().replace('[', '').replace(']', '')
+    uk_soundmark = re.findall('<div class="hd_pr b_primtxt">英(.*?)</div>', text, re.DOTALL)[0].strip().replace('[', '').replace(']', '')
+
+    # str: 发音音频
+    us_sounds = re.findall('<a class="bigaud".*?https://(.*?).mp3.*?</a>', text, re.DOTALL)[0]
+    uk_sounds = re.findall('<a class="bigaud".*?https://(.*?).mp3.*?</a>', text, re.DOTALL)[1]
+
+    # list: 单词释义列表
     info_list_pro = re.findall('<div class="hd_area">.*?</div>.*?(<li>.*?</li>)</ul>', text, re.DOTALL)[0]
     info_list = re.findall('<li>.*?<span class="pos[ web]*">(.*?)</span>.*?<span>(.*?)</span>.*?</li>', info_list_pro, re.DOTALL)
 
+    # list: 单词变体列表
     if not re.search('<div class="hd_if">', text, re.DOTALL) == None:
         tense_div = re.findall('<div class="hd_if">.*?</div>', text, re.DOTALL)[0]
         tense_list = re.findall('<span class="b_primtxt">(.*?)</span>.*?<a class="p1-5" .*?>(.*?)</a>', tense_div, re.DOTALL)
     else: tense_list = []
 
-    example_en_list_01 = html.xpath('//div[@class="se_li"][position()<2]/div[@class="se_li1"]/div[@class="sen_en b_regtxt"]//text()')
-    example_zh_list_01 = html.xpath('//div[@class="se_li"][position()<2]/div[@class="se_li1"]/div[@class="sen_cn b_regtxt"]//text()')
-    example_en_01 = ''.join(example_en_list_01)
-    example_zh_01 = ''.join(example_zh_list_01)
-        
-    example_en_list_02 = html.xpath('//div[@class="se_li"][position()>1][position()<3]/div[@class="se_li1"]/div[@class="sen_en b_regtxt"]//text()')
-    example_zh_list_02 = html.xpath('//div[@class="se_li"][position()>1][position()<3]/div[@class="se_li1"]/div[@class="sen_cn b_regtxt"]//text()')
-    example_en_02 = ''.join(example_en_list_02)
-    example_zh_02 = ''.join(example_zh_list_02)
+    # 例句
+    # list: 英语例句
+    example_en_list_pro = html_content.xpath('//div[@class="se_li"][position()<4]')
+    example_en_list = []
+    i = 1
+    for _ in example_en_list_pro:
+        r1 = _.xpath('.//div[@class="sen_en b_regtxt"]//text()')
+        r2 = ''.join(r1)
+        r3 = f'<span class="list">{i}. </span>' + r2
+        example_en_list.append(r3)
+        i += 1
 
-    example_en_list_03 = html.xpath('//div[@class="se_li"][position()>2][position()<4]/div[@class="se_li1"]/div[@class="sen_en b_regtxt"]//text()')
-    example_zh_list_03 = html.xpath('//div[@class="se_li"][position()>2][position()<4]/div[@class="se_li1"]/div[@class="sen_cn b_regtxt"]//text()')
-    example_en_03 = ''.join(example_en_list_03)
-    example_zh_03 = ''.join(example_zh_list_03)
+    # list: 中文例句
+    example_zh_list_pro = html_content.xpath('//div[@class="se_li"][position()<4]')
+    example_zh_list = []
+    for _ in example_zh_list_pro:
+        r1 = _.xpath('.//div[@class="sen_cn b_regtxt"]//text()')
+        r2 = ''.join(r1)
+        example_zh_list.append(r2)
+    # list: 使用zip合并为一个新列表
+    example_list = list(zip(example_en_list, example_zh_list))
 
-    # 搭配
-    collocation_title_list_pro = html.xpath('//div[@id="colid"]/div[@class="df_div2"]/div[@class="de_title2 b_dictHighlight"]//text()')
+    # 短语搭配
+    # list: 搭配类别提示
+    collocation_title_list_pro = html_content.xpath('//div[@id="colid"]/div[@class="df_div2"]/div[@class="de_title2 b_dictHighlight"]//text()')
     collocation_title_list = []
     for _ in collocation_title_list_pro:
-        collocation_title_list.append(_)
-
-    collocation_content_list_pro = html.xpath('//div[@id="colid"]/div[@class="df_div2"]/div[@class="col_fl"]')
+        r = f'<span>{_}</span>'
+        collocation_title_list.append(r)
+    # list: 搭配具体内容
+    collocation_content_list_pro = html_content.xpath('//div[@id="colid"]/div[@class="df_div2"]/div[@class="col_fl"]')
     collocation_content_list = []
     for _ in collocation_content_list_pro:
-        r = _.xpath('.//a/span/text()')
-        collocation_content_list.append(r)
-        
-    collocation_content = []
-    for _ in collocation_content_list:
-        r = ', '.join(_)
-        collocation_content.append(r)
-    
-    collocation = list(zip(collocation_title_list,collocation_content))
+        r1 = _.xpath('.//a/span/text()')
+        r2 = ', '.join(r1)
+        collocation_content_list.append(r2)
+    # list: 使用zip合并为一个列表
+    collocation = list(zip(collocation_title_list,collocation_content_list))
 
-    print(word)
-    print('-' * 90)
-
-    print('发音')
-    print('美', us_soundmark, '英', uk_soundmark)
-    print(us_sounds)
-    print(uk_sounds)
-    print('-' * 90)
-
-    print('释义')
+    # str: 主要释义部分组接字符串
+    main_info = ''
     for _ in info_list:
-        print(_[0], _[1])
-    print('-' * 90)
-
-    if not tense_list == []:
-        print('变体')
-        for _ in tense_list:
-            print(_[0], _[1])
-        print('-' * 90)
-
-    print('搭配')
+        r = '<div>' + _[0] + ' ' + _[1] + '</div>'
+        main_info += r
+    # str: tense组接字符串
+    tense = ''
+    for _ in tense_list:
+        r = '<div>' + '<span>' + _[0] + '</span>' + ' ' + _[1] + '</div>'
+        tense += r
+    # str: collocation_result组接字符串
+    colllocation_result = ''
     for _ in collocation:
-        print(f'{_[0]}: {_[1]}')
-    print('-' * 90)
+        r = '<div>' + _[0] + ' ' + _[1] + '</div>'
+        colllocation_result += r
+    # str: 例句字符串组接
+    example = ''
+    for _ in example_list:
+        r = '<div>' + _[0] + '</div><div>' + _[1] + '</div>'
+        example += r
+    # str: 容错处理，如果例句中有英文双引号则替换为单引号
+    new_example = example.replace('"', '\'')
+    # str: 最终数据输出组接
+    data = f"""[["{top_tip}","{word}","{us_soundmark}","{uk_soundmark}","{us_sounds}","{uk_sounds}","{main_info}","{tense}","{colllocation_result}","{new_example}<div><br></div>"],""]"""
+    return data
 
-    print('例句：')
-    print(example_en_01)
-    print(example_zh_01)
-    print('\n')
-    print(example_en_02)
-    print(example_zh_02)
-    print('\n')
-    print(example_en_03)
-    print(example_zh_03)
-
-
+data = main()

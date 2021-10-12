@@ -1,4 +1,5 @@
-import requests, re, time, json
+import requests, re, time 
+import main
 
 add_headers = {
     'authority':'ankiuser.net',
@@ -29,8 +30,6 @@ edit_headers = {
 }
 
 if __name__ == '__main__':
-    # zhengmian = 'fuck you'
-    # beimian = 'come on!'
     # 接码csrf
     url = 'https://ankiuser.net/edit/'
     res = requests.get(url, headers=edit_headers)
@@ -39,7 +38,7 @@ if __name__ == '__main__':
     url = 'https://ankiuser.net/edit/save'
     params =  {
         'nid': '',
-        'data': f'[["fuck_fuck","fuck_en","fuck_zh","a. test_1<div>b.test_b</div>","过去式：fucked<div>进行式：fucking</div>","fuck your whole family.","https://somewords.com","https://somewords_new_fuck.com"],""]',
+        'data': main.data,
         'csrf_token': csrf,
         'mid': '1633611353388',
         'deck': '1633610331701'
@@ -50,3 +49,4 @@ if __name__ == '__main__':
         print('success:操作成功')
 
     print(1)
+    print(main.data)
