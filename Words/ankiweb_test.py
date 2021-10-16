@@ -1,5 +1,11 @@
 import requests, re, time 
-import main
+from main import GetWordInfo
+
+data = GetWordInfo()
+
+cookie = 'ankiweb=eyJrIjogIlJxOVNaT2x6MlRtNGZ2NmQiLCAiYyI6IDIsICJ0IjogMTYzMzk1Mjk0MH0.YETFinJeI-tC1crhAcEuYFKqLXDvzEK-JH1urPmrP3Y'
+mid = '1633611353388'
+deck = '1633610331701'
 
 add_headers = {
     'authority':'ankiuser.net',
@@ -8,7 +14,7 @@ add_headers = {
     'scheme':'https',
     'accept':'*/*',
     'content-type':'application/x-www-form-urlencoded; charset=UTF-8',
-    'cookie':'ankiweb=eyJrIjogIlJxOVNaT2x6MlRtNGZ2NmQiLCAiYyI6IDIsICJ0IjogMTYzMzk1Mjk0MH0.YETFinJeI-tC1crhAcEuYFKqLXDvzEK-JH1urPmrP3Y',
+    'cookie': cookie,
     'dnt':'1',
     'origin':'https://ankiuser.net',
     'referer':'https://ankiuser.net/edit/',
@@ -23,7 +29,7 @@ edit_headers = {
     'accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
     'accept-encoding':'gzip, deflate, br',
     'accept-language':'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
-    'cookie':'ankiweb=eyJrIjogIlJxOVNaT2x6MlRtNGZ2NmQiLCAiYyI6IDIsICJ0IjogMTYzMzk1Mjk0MH0.YETFinJeI-tC1crhAcEuYFKqLXDvzEK-JH1urPmrP3Y',
+    'cookie': cookie,
     'referer':'https://ankiuser.net/study/',
     'user-agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
     'x-requested-with':'XMLHttpRequest'
@@ -38,15 +44,16 @@ if __name__ == '__main__':
     url = 'https://ankiuser.net/edit/save'
     params =  {
         'nid': '',
-        'data': main.data,
+        'data': data.get_word(),
         'csrf_token': csrf,
-        'mid': '1633611353388',
-        'deck': '1633610331701'
+        'mid': mid,
+        'deck': deck 
     }
     time.sleep(2)
     res = requests.post(url, data=params, headers=add_headers)
     if res.status_code==200:
-        print('success:操作成功')
+        print('success!')
+    else: 
+        print('something wrong!')
 
-    print(1)
-    print(main.data)
+print(data.get_word())
